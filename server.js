@@ -1,42 +1,30 @@
+/* jshint node: true, browser: false */
 'use strict';
 
-var fs = require('fs');
-var http = require('http');
-var express = require('express');
-var httpProxy = require('http-proxy');
+// CREATE HTTP SERVER AND PROXY
 
-// Create server & proxy
+var app = require('express')();
+app.set('views', __dirname + '/app');
+app.set('view engine', 'ejs');
 
-var app    = express();
-var server = http.createServer(app);
-var proxy  = httpProxy.createProxyServer({});
+app.use(require('morgan')('dev'));
 
-app.configure(function() {
+// LOAD CONFIGURATION
 
-    app.use(express.logger('dev'));
-    app.use(express.compress());
+app.set('port', process.env.PORT || 2020);
 
-    app.use('/app', express.static(__dirname + '/app'));
-    app.use('/favicon.png', express.static(__dirname + '/app/images/favicon.png', { maxAge: 86400000 }));
-});
+// CONFIGURE /APP/* ROUTES
 
-// Configure routes
+app.use('/app',   require('serve-static')(__dirname + '/app_build'));
+app.use('/app',   require('serve-static')(__dirname + '/app'));
+app.all('/app/*', function(req, res) { res.status(404).send(); } );
 
-app.get('/app/*', function(req, res) { res.send('404', 404); } );
-app.all('/api/*', function(req, res) { proxy.web(req, res, { target: 'https://api.cbd.int', secure: false } ); } );
+// CONFIGURE TEMPLATE
 
-// Configure template file
+app.get('/*', function (req, res) { res.render('template', { baseUrl: req.headers.base_url || '/' }); });
 
-app.get('/*', function(req, res) {
-	fs.readFile(__dirname + '/app/template.html', 'utf8', function (error, text) {
-		res.send(text);
-	});
-});
+// START SERVER
 
-// Start server
-
-server.listen(2060, '127.0.0.1');
-
-server.on('listening', function () {
+app.listen(app.get('port'), function () {
 	console.log('Server listening on %j', this.address());
 });
