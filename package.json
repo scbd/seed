@@ -1,7 +1,7 @@
 {
-  "name": "seed",
-  "version": "0.0.2",
-  "description": "This project is an application skeleton for typical SCBD AngularJS/RequireJS/Bootstrap web apps.",
+  "name": "Seed",
+  "version": "2.0.0",
+  "description": "Seed portal",
   "main": "server.js",
   "dependencies": {
     "bower": "1.7.0",
